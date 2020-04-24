@@ -1,0 +1,45 @@
+server:
+  port: 8802
+spring:
+  application:
+    name: cloud-zuul
+###############################################
+eureka:
+  server:
+    # 两个缓存之间的同步更新时间
+    response-cache-update-interval-ms: 5000
+    # 多久检查一次心跳
+    eviction-interval-timer-in-ms: 6000
+  client:
+    service-url: # EurekaServer地址
+      defaultZone: http://127.0.0.1:10086/eureka,http://127.0.0.1:10087/eureka
+    # 去注册中心拉取可用服务列表时间间隔
+    registry-fetch-interval-seconds: 5
+  instance:
+    instance-id: ${spring.application.name}:${server.port}
+    prefer-ip-address: true # 当调用getHostname获取实例的hostname时，返回ip而不是host名称
+    ip-address: 127.0.0.1 # 指定自己的ip信息，不指定的话会自己寻找
+    # 心跳上报时间，默认30s
+    lease-renewal-interval-in-seconds: 3
+    # 默认90秒才下线
+    lease-expiration-duration-in-seconds: 9
+###############################################
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,hystrix.stream,routes
+
+##负载均衡 com.netflix.client.ClientException: Load balancer does not have available server for client ...
+ribbon:
+  eureka:
+    enabled: true
+
+zuul:
+  prefix: /api
+  ignoredPatterns: /**/login/* #忽略所有包含/login/的地址请求
+  routes:
+    user-api: /userapi/**
+    order-api: /orderapi/**
+    goods-api: /goodsapi/**
+
